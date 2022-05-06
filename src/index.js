@@ -1,8 +1,175 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { render } from 'react-dom';
 import style from '../styles/style.css';
 
-ReactDOM.render(
-    <h1>nice work</h1>,
-    document.getElementById('root')
-);
+class App extends Component {
+  constructor() {
+  super();
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>market harvest</h1>
+        <Harvest className='harvest'></Harvest>
+      </div>
+    );
+  }
+}
+
+class Harvest extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      product: ['kale', 'squash', 'tomato', 'okra', 'chard'],
+      quantity: [42, 10, 10, 4, 16],
+      price: [2, 0.5, 1.50, 2, 1],
+      strPrice: ['$2.00', '$0.50', '$1.50', '$2.00', '$1.00'],
+      total: 0,
+      basket: [],
+      onhand: [],
+      apiRes: '',
+      inventoryList: [],
+    };
+    this.handleClick = this.handleClick.bind(this);
+    this.checkInventory = this.checkInventory.bind(this);
+  }
+
+  callAPI() {
+    fetch("http://localhost:3000/inv")
+      .then(res => res.json())
+      .then(res => {
+        // console.log('response', res[0])
+        this.setState({ apiRes: res})
+      })
+      .catch(err => err);
+  }
+
+  // componentDidMount() {
+  //   this.callAPI();
+  // }
+
+
+  handleClick(ind) {
+    // console.log('clicked', this.state.product[ind]);
+    if (this.state.quantity[ind] > 0) {
+      
+      const newBasket = JSON.parse(JSON.stringify(this.state.basket));
+      newBasket.push(this.state.product[ind]);
+      
+      const newQty = this.state.quantity;
+      newQty[ind] -= 1;
+      
+      let newTotal = this.state.total + this.state.price[ind];
+      
+      this.setState((state) => {
+        return {basket: newBasket, total: newTotal, quantity: newQty};
+      });
+    }
+      
+    return (
+      <div>
+        <h2>basket</h2>
+        {/* <Basket text={this.state.basket[0]}></Basket>
+        <Basket text={this.state.basket[1]}></Basket>
+        <Basket text={this.state.basket[2]}></Basket> */}
+      </div>
+    )
+
+  };
+
+  checkInventory() {
+    this.callAPI();
+    setTimeout(() => {
+      // console.log('delayed');
+      for (let i = 0; i < this.state.onhand.length; i++) {
+        this.state.inventoryList.push(<Stockroom key={i} text={`${this.state.apiRes[i][product]}: ${this.state.apiRes[i][quantity]}`}></Stockroom>)
+        // console.log(`${this.state.product[i]}: ${this.state.quantity[i]}`);
+      };
+      console.log(this.state.inventoryList);
+    }, '5000');
+    // const newOnHand = [];
+    // // JSON.parse(JSON.stringify(this.state.onhand));
+    // for (let i = 0; i < this.state.product.length; i++) {
+    //   newOnHand.push([this.state.product[i], this.state.quantity[i]]);
+    // };
+    // this.setState((state) => {
+    //   return {onhand: newOnHand};
+    // })
+  };
+
+  render() {
+    const items = [];
+    for (let i = 0; i < this.state.product.length; i++) {
+      items.push(<Item key={i} index={i} text={this.state.product[i]} price={this.state.strPrice[i]} handleClick={this.handleClick}></Item>);
+    }
+
+    const basketReceipt = [];
+    for (let i = 0; i < 20; i++) {
+      basketReceipt.push(<Basket key={i} text={this.state.basket[i]}></Basket>);
+    }
+
+
+    return (
+      <div>
+        {items}
+        <Inventory checkInventory={this.checkInventory}></Inventory>
+        {this.state.inventoryList}
+        <h2>basket</h2>
+        <h4>{`$${this.state.total}`}</h4>
+        {basketReceipt}
+      </div>
+    )
+
+  }
+}
+
+
+
+class Item extends Component {
+  render() {
+    return (
+      <button className="item" onClick={() => this.props.handleClick(this.props.index)} style={{boxShadow: '1px 2px #379683', height:'110px', width:'175px', margin:'20px'}}>
+        <h3>{this.props.text}</h3>
+        <p>{this.props.price}</p>
+      </button>
+    );
+  }
+} 
+
+
+
+class Basket extends Component {
+  render() {
+    return (
+      <div>
+          <button className="basketButton" style={{color: '#edf5e1', backgroundColor:'#5cdb95', height:'20px', width:'100px'}}>{this.props.text}</button>
+      </div>
+    );
+  }
+}
+
+class Inventory extends Component {
+  render() {
+    return (
+      <div>
+        <button className="inventory" onClick={() => this.props.checkInventory()} style={{margin: '20px 0 0 0', background: '#379683', width: '300px', height: '50px'}}>check inventory</button>
+      </div>
+    );
+  }
+}
+
+class Stockroom extends Component {
+  render() {
+    return (
+      <ul>
+        <li className="stockroom" style={{listStyleType: 'none'}}>{this.props.text}</li>
+      </ul>
+    )
+  }
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+
+// render(<App/>, document.getElementById('root'));

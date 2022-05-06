@@ -1,3 +1,52 @@
 body {
-  background: lightseagreen;
+  background: #5cdb95;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5em;
+  color: #05386b;
 }
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px #379683;
+}
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 1px;
+  /* text-shadow: 1px 1px #379683; */
+  color: #edf5e1;
+}
+
+h3 {
+  margin: 15px 0px -5px 0px;
+  /* line-height: 0em; */
+}
+
+h4 {
+  color: #edf5e1;
+}
+
+button {
+  font-family: 'Montserrat', sans-serif;
+  font-size: .9em;
+  background: #05386b;
+  color: #5cdb95;
+  border-width: 0px;
+  border-radius: 10px;
+}
+
+button:hover {
+  color: #edf5e1;
+  background: #05386b;
+}
+
+button:active {
+  transform: translateY(4px);
+}
+
+li {
+  line-height: 0em;
+}
+

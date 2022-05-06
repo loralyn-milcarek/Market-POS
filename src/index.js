@@ -4,21 +4,6 @@ import { render } from 'react-dom';
 import style from '../styles/style.css';
 
 class App extends Component {
-  constructor() {
-  super();
-  }
-
-  render() {
-    return (
-      <div>
-        <h1>market harvest</h1>
-        <Harvest className='harvest'></Harvest>
-      </div>
-    );
-  }
-}
-
-class Harvest extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -32,24 +17,27 @@ class Harvest extends Component {
       apiRes: '',
       inventoryList: [],
     };
+    
     this.handleClick = this.handleClick.bind(this);
     this.checkInventory = this.checkInventory.bind(this);
+
   }
 
   callAPI() {
     fetch("http://localhost:3000/inv")
       .then(res => res.json())
       .then(res => {
-        // console.log('response', res[0])
+        console.log('response', res[0])
         this.setState({ apiRes: res})
+        console.log('apiRes:', this.state.apiRes)
       })
       .catch(err => err);
   }
 
-  // componentDidMount() {
-  //   this.callAPI();
-  // }
-
+  componentDidMount() {
+    this.callAPI();
+    console.log('called API');
+  }
 
   handleClick(ind) {
     // console.log('clicked', this.state.product[ind]);
@@ -80,44 +68,53 @@ class Harvest extends Component {
   };
 
   checkInventory() {
-    this.callAPI();
-    setTimeout(() => {
-      // console.log('delayed');
-      for (let i = 0; i < this.state.onhand.length; i++) {
-        this.state.inventoryList.push(<Stockroom key={i} text={`${this.state.apiRes[i][product]}: ${this.state.apiRes[i][quantity]}`}></Stockroom>)
-        // console.log(`${this.state.product[i]}: ${this.state.quantity[i]}`);
-      };
-      console.log(this.state.inventoryList);
-    }, '5000');
-    // const newOnHand = [];
-    // // JSON.parse(JSON.stringify(this.state.onhand));
-    // for (let i = 0; i < this.state.product.length; i++) {
-    //   newOnHand.push([this.state.product[i], this.state.quantity[i]]);
-    // };
-    // this.setState((state) => {
-    //   return {onhand: newOnHand};
-    // })
+    console.log(this.state.apiRes);
+    for(let i = 0; i < this.state.apiRes.length; i++) {
+      this.state.onhand.push(<Stockroom id={i} text={`${this.state.apiRes[i].product}: ${this.state.apiRes[i].quantity}`}></Stockroom>)
+    }
   };
 
   render() {
+    return (
+      <div>
+        <h1>market harvest</h1>
+        <Harvest className='harvest' total={this.state.total} handleClick={this.handleClick} checkInventory={this.checkInventory} product={this.state.product} onhand={this.state.onhand} basket={this.state.basket} price={this.state.price} strPrice={this.state.strPrice}></Harvest>
+      </div>
+    );
+  }
+}
+
+class Harvest extends Component {
+  constructor(props) {
+    super(props);
+    // this.checkInventory = this.checkInventory.bind(this);
+
+  }
+
+
+  render() {
     const items = [];
-    for (let i = 0; i < this.state.product.length; i++) {
-      items.push(<Item key={i} index={i} text={this.state.product[i]} price={this.state.strPrice[i]} handleClick={this.handleClick}></Item>);
+    for (let i = 0; i < this.props.product.length; i++) {
+      items.push(<Item key={i} index={i} text={this.props.product[i]} price={this.props.strPrice[i]} handleClick={this.props.handleClick}></Item>);
     }
 
     const basketReceipt = [];
     for (let i = 0; i < 20; i++) {
-      basketReceipt.push(<Basket key={i} text={this.state.basket[i]}></Basket>);
+      basketReceipt.push(<Basket key={i} text={this.props.basket[i]}></Basket>);
     }
-
+    
+    const inventoryList = []
+    for (let i = 0; i < this.props.onhand.length; i++) {
+      inventoryList.push(<Stockroom key={i} text={`${this.props.apiRes[i][product]}: ${this.props.apiRes[i][quantity]}`}></Stockroom>)
+    }
 
     return (
       <div>
         {items}
-        <Inventory checkInventory={this.checkInventory}></Inventory>
-        {this.state.inventoryList}
+        <Inventory checkInventory={this.props.checkInventory}></Inventory>
+        {inventoryList}
         <h2>basket</h2>
-        <h4>{`$${this.state.total}`}</h4>
+        <h4>{`$${this.props.total}`}</h4>
         {basketReceipt}
       </div>
     )
@@ -130,7 +127,7 @@ class Harvest extends Component {
 class Item extends Component {
   render() {
     return (
-      <button className="item" onClick={() => this.props.handleClick(this.props.index)} style={{boxShadow: '1px 2px #379683', height:'110px', width:'175px', margin:'20px'}}>
+      <button className="item" onClick={() => this.props.handleClick(this.props.index)} product={this.props.product} style={{boxShadow: '1px 2px #379683', height:'110px', width:'175px', margin:'20px'}}>
         <h3>{this.props.text}</h3>
         <p>{this.props.price}</p>
       </button>
@@ -164,6 +161,7 @@ class Stockroom extends Component {
   render() {
     return (
       <ul>
+        <li>{this.props.onhand}</li>
         <li className="stockroom" style={{listStyleType: 'none'}}>{this.props.text}</li>
       </ul>
     )
